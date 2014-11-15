@@ -1,6 +1,6 @@
 #encoding: utf-8
 class Dictionary
-  attr_reader :random, :pattern
+  attr_reader :random, :pattern, :template
 
   def initialize
     @random = []
@@ -20,16 +20,76 @@ class Dictionary
         @pattern.push(PatternItem.new(pattern, phrases))
       end
     end
+
+    @template = []
+    open('dics/template.txt') do |f|
+      f.each do |line|
+        count, template = line.chomp.split(/___/)
+        next if count.nil? or template.nil?
+        count = count.to_i
+        @template[count] = [] unless @template[count]
+        @template[count].push(template)
+      end
+    end
   end
 
-  def study(input)
+  def study(input, parts)
+    study_random(input)
+    study_pattern(input, parts)
+    study_template(parts)
+  end
+
+  def study_random(input)
     return if @random.include?(input)
     @random.push(input)
+  end
+
+  def study_pattern(input, parts)
+    parts.each do |word, part|
+      next unless Morph::keyword?(part)
+      duped = @pattern.find{|ptn_item| ptn_item.pattern == word}
+      if duped
+        duped.add_phrase(input)
+      else
+        @pattern.push(PatternItem.new(word, input))
+      end
+    end
+  end
+
+  def study_template(parts)
+    template = ''
+    count = 0
+    parts.each do |word, part|
+      if Morph::keyword?(part)
+        word = '%noun%'
+        count += 1
+      end
+      template += word
+    end
+    return unless count > 0
+
+    @template[count] = [] unless @template[count]
+    unless @template[count].include?(template)
+      @template[count].push(template)
+    end
   end
 
   def save
     open('dics/random.txt', 'w') do |f|
       f.puts(@random)
+    end
+
+    open('dics/pattern.txt', 'w') do |f|
+      @pattern.each{|ptn_item| f.puts(ptn_item.make_line)}
+    end
+
+    open('dics/template.txt', 'w') do |f|
+      @template.each_with_index do |template, i|
+        next if template.nil?
+        template.each do |template|
+          f.puts(i.to_s + "___" + template)
+        end
+      end
     end
   end
 
@@ -47,7 +107,7 @@ class PatternItem
 
     @phrases = []
     phrases.split('|').each do |phrase|
-      # $3:機嫌必要値, $3:フレーズ一覧
+      # $3:機嫌必要値, $3:フレーズ(反応)一覧
       SEPARATOR =~ phrase
       @phrases.push({need: $2.to_i, phrase: $3})
     end
@@ -72,6 +132,17 @@ class PatternItem
     else
       return mood < need
     end
+  end
+
+  def add_phrase(phrase)
+    return if @phrases.find{|p| p[:phrase] == phrase}
+    @phrases.push({need: 0, phrase: phrase})
+  end
+
+  def make_line
+    pattern = @modify.to_s + "##" + @pattern
+    phrases = @phrases.map{|p| p[:need].to_s + "##" + p[:phrase]}
+    return pattern + "___" + phrases.join('|')
   end
 
 end
