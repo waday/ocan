@@ -2,6 +2,7 @@
 require './lib/responder'
 require './lib/dictionary'
 require './lib/emotion'
+require './lib/morph'
 
 class Gizmo
   attr_reader :name, :emotion
@@ -13,24 +14,28 @@ class Gizmo
     @resp_what = WhatResponder.new('What', @dictionary)
     @resp_random = RandomResponder.new('Random', @dictionary)
     @resp_pattern = PatternResponder.new('Pattern', @dictionary)
+    @resp_template = TemplateResponder.new('Template', @dictionary)
     @responder = @resp_pattern
   end
 
   def dialogue(input)
   
     @emotion.update(input)
+    parts = Morph::analyze(input)
 
     case rand(100)
-    when 0..59
+    when 0..39
       @responder = @resp_pattern
-    when 60..89
+    when 40..69
+      @responder = @resp_template
+    when 70..89
       @responder = @resp_random
     else
       @responder = @resp_what
     end
-    resp = @responder.response(input, @emotion.mood)
+    resp = @responder.response(input, parts, @emotion.mood)
 
-    @dictionary.study(input)
+    @dictionary.study(input, parts)
     return resp
   end
 
