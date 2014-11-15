@@ -2,7 +2,7 @@
 require './lib/gizmo'
 
 def prompt(gizmo)
-  return gizmo.name + ':' + gizmo.responder_name + '> '
+  return gizmo.name + ':' + gizmo.responder_name + '(' + gizmo.emotion.mood.to_s + ')> '
 end
 
 puts('Unmo System prototype : proto')
@@ -11,7 +11,10 @@ while true
   print('> ')
   input = gets
   input.chomp!
-  break if input == ''
+  if input == ''
+    proto.save
+    break
+  end
 
   response = proto.dialogue(input)
   puts(prompt(proto) + response)
