@@ -8,6 +8,7 @@ module Morph
     words = []
     node = MeCab::Tagger.new.parseToNode(text)
     while node
+      puts "#{node.surface}\t#{node.feature}"
       words.push("#{node.surface}\t#{node.feature}") unless node.feature.match("BOS")
       node = node.next
     end
