@@ -18,6 +18,7 @@ while true
   end
 
   #puts Morph::analyze(input)
+  #p input
 
   response = ocan.dialogue(input)
   puts(prompt(ocan) + response)

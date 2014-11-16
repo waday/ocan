@@ -1,6 +1,6 @@
 #encoding: utf-8
 # 形態素解析モジュール
-require 'mecab'
+require 'MeCab'
 
 module Morph
 
@@ -8,8 +8,7 @@ module Morph
     words = []
     node = MeCab::Tagger.new.parseToNode(text)
     while node
-      puts "#{node.surface}\t#{node.feature}"
-      words.push("#{node.surface}\t#{node.feature}") unless node.feature.match("BOS")
+      words.push("#{node.surface}\t#{node.feature}") unless node.feature.match("EOS")
       node = node.next
     end
 

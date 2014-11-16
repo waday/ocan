@@ -1,17 +1,32 @@
 #encoding: utf-8
 class Dictionary
-  attr_reader :random, :pattern, :template
+  require './lib/markov'
+  attr_reader :random, :pattern, :template, :markov
 
   def initialize
-    @random = []
-    open('dics/random.txt') do |f|
-      f.each do |line|
-        line.chomp!
-        next if line.empty?
-        @random.push(line)
-      end
-    end
+    load_random
+    load_pattern
+    load_template
+    load_markov
+  end
 
+  def load_random
+    @random = []
+    begin
+      open('dics/random.txt') do |f|
+        f.each do |line|
+          line.chomp!
+          next if line.empty?
+          @random.push(line)
+        end
+      end
+    rescue => e
+      puts(e.message)
+      @random.push('こんにちは')
+    end
+  end
+
+  def load_pattern
     @pattern = []
     open('dics/pattern.txt') do |f|
       f.each do |line|
@@ -20,7 +35,9 @@ class Dictionary
         @pattern.push(PatternItem.new(pattern, phrases))
       end
     end
+  end
 
+  def load_template
     @template = []
     open('dics/template.txt') do |f|
       f.each do |line|
@@ -33,10 +50,22 @@ class Dictionary
     end
   end
 
+  def load_markov
+    @markov = Markov.new
+    begin
+      open('dics/markov.dat', 'rb') do |f|
+        @markov.load(f)
+      end
+    rescue => e
+      puts(e.message)
+    end
+  end
+
   def study(input, parts)
     study_random(input)
     study_pattern(input, parts)
     study_template(parts)
+    study_markov(parts)
   end
 
   def study_random(input)
@@ -74,6 +103,10 @@ class Dictionary
     end
   end
 
+  def study_markov(parts)
+    @markov.add_sentence(parts)
+  end
+
   def save
     open('dics/random.txt', 'w') do |f|
       f.puts(@random)
@@ -90,6 +123,10 @@ class Dictionary
           f.puts(i.to_s + "___" + template)
         end
       end
+    end
+
+    open('dics/markov.dat', 'wb') do |f|
+      @markov.save(f)
     end
   end
 

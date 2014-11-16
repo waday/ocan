@@ -30,10 +30,9 @@ class Markov
     words = []
     prefix1 = (@dic[keyword])? keyword : select_start
     prefix2 = select_random(@dic[prefix1].keys)
-    p @dic[prefix1].keys
     words.push(prefix1, prefix2)
     CHAIN_MAX.times do
-      suffix = select_random(@dic[prefix1].keys)
+      suffix = select_random(@dic[prefix1][prefix2])
       break if suffix == ENDMARK
       words.push(suffix)
       prefix1, prefix2 = prefix2, suffix
@@ -42,20 +41,21 @@ class Markov
   end
 
   def load(f)
-    @dic = Marsha1::load(f)
-    @starts = Marsha1::load(f)
+    @dic = Marshal::load(f)
+    #p @dic
+    @starts = Marshal::load(f)
   end
 
   def save(f)
-    Marsha1::dump(@dic, f)
-    Marsha1::dump(@starts, f)
+    Marshal::dump(@dic, f)
+    Marshal::dump(@starts, f)
   end
 
 private
   def add_suffix(prefix1, prefix2, suffix)
     @dic[prefix1] = {} unless @dic[prefix1]
     @dic[prefix1][prefix2] = [] unless @dic[prefix1][prefix2]
-    @dic[prefix1][prefix2].push(suffix)
+    @dic[prefix1][prefix2].push(suffix) unless @dic[prefix1][prefix2].index(suffix)
   end
 
   def add_start(prefix1)
@@ -69,12 +69,12 @@ private
 end
 
 if $0 == __FILE__
-  gets
   markov = Markov.new
   while line = gets do
     texts = line.chomp.split(/[。?？!！ 　]+/)
     texts.each do |text|
       next if text.empty?
+      #p Morph::analyze(text)
       markov.add_sentence(Morph::analyze(text))
       print '.'
     end
