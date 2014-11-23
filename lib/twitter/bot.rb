@@ -11,12 +11,19 @@ class Bot
  
     keys = YAML.load_file('./config.yml')
  
-    @client = Twitter::REST::Client.new do |config|
-      config.consumer_key = keys["api_key"]
-      config.consumer_secret = keys["api_secret"]
-      config.access_token = keys["access_token"]
-      config.access_token_secret = keys["access_token_secret"]
-    end
+    @client = Twitter::REST::Client.new(
+     :consumer_key => keys["api_key"],
+     :consumer_secret => keys["api_secret"],
+     :access_token => keys["access_token"],
+     :access_token_secret => keys["access_token_secret"]
+    )
+    p @client
+    #@client = Twitter::REST::Client.new do |config|
+    #  config.consumer_key = keys["api_key"]
+    #  config.consumer_secret = keys["api_secret"]
+    #  config.access_token = keys["access_token"]
+    #  config.access_token_secret = keys["access_token_secret"]
+    #end
  
     TweetStream.configure do |config|
       config.consumer_key = keys["api_key"]
@@ -27,7 +34,7 @@ class Bot
     end
  
     @timeline = TweetStream::Client.new
- 
+
   end
  
   def post(text = "",twitter_id:nil,status_id:nil)
