@@ -17,13 +17,6 @@ class Bot
      :access_token => keys["access_token"],
      :access_token_secret => keys["access_token_secret"]
     )
-    p @client
-    #@client = Twitter::REST::Client.new do |config|
-    #  config.consumer_key = keys["api_key"]
-    #  config.consumer_secret = keys["api_secret"]
-    #  config.access_token = keys["access_token"]
-    #  config.access_token_secret = keys["access_token_secret"]
-    #end
  
     TweetStream.configure do |config|
       config.consumer_key = keys["api_key"]
