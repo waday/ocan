@@ -1,6 +1,7 @@
 #encoding: utf-8
 # 形態素解析モジュール
-require 'MeCab'
+#require 'MeCab'
+require 'mecab'
 
 module Morph
 
